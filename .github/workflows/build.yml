@@ -22,16 +22,9 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Install build tools and base packages
+      - name: Install build tools
         run: |
           apt-get update && apt-get install -y unzip wget p7zip-full
-          dkp-pacman -Syu --noconfirm
-          dkp-pacman -S --noconfirm \
-            switch-curl switch-libass switch-libvpx switch-glm switch-libpng \
-            switch-ntfs-3g switch-libfribidi switch-bzip2 switch-libarchive \
-            switch-mbedtls switch-pkg-config switch-harfbuzz switch-libjpeg-turbo \
-            switch-dav1d switch-freetype switch-libwebp switch-libssh2 switch-lwext4 \
-            switch-tinyxml2 switch-jansson switch-libopus || true
 
       - name: Deploy Author's Precompiled NXMP Portlibs
         run: |
