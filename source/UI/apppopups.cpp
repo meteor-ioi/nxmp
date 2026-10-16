@@ -6,7 +6,9 @@
 
 #include "nxmp-i18n.h"
 
+#ifdef BUILD_DVDNAV
 #include "nxmp_dvdnav.h"
+#endif
 
 namespace Popups{
 	
@@ -705,12 +707,14 @@ namespace Popups{
 			ImGui::PushStyleColor(ImGuiCol_Text, Active_color);
 			
 			
+#ifdef BUILD_DVDNAV
 			if(ImGui::Button("Open as DVD (libdvdnav)",button_size)){
 				item.popupstate = POPUP_STATE_NONE;
 				CDVDNav DVDNav(item.popuparg);
 				DVDNav.ParseDVDISO(item.popuparg);
 				//libmpv->loadDVD(item.popuparg);
 			}
+#endif
 			if(ImGui::Button("Open Filesytem (mount as an archive)",button_size)){
 				item.popupstate = POPUP_STATE_NONE;
 			}
