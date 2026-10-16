@@ -67,7 +67,7 @@ CFLAGS	:=	-g -ggdb -Wall -Wno-sign-compare -O2 -ffunction-sections -DCXXOPTS_NO_
                 $(GITREV)
 CFLAGS  +=  -I${PORTLIBS}/include/upnp/ -I${PORTLIBS}/include/freetype2/
 
-CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DDEKO3D_BACKEND=1
+CFLAGS	+=	$(INCLUDE) -D__SWITCH__ -DDEKO3D_BACKEND=1 -DEXCLUDE_BUILD_NFS
 
 CFLAGS  +=      -DVERSION_MAJOR=$(VERSION_MAJOR) -DVERSION_MINOR=$(VERSION_MINOR) -DVERSION_MICRO=$(VERSION_MICRO) 
 

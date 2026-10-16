@@ -160,7 +160,7 @@ namespace nxlangs{
 	
 	
 	
-	typedef struct {
+	struct lang_struct {
 		int id = 0;
 		std::string name = "";
 		std::string author = "";
@@ -173,7 +173,7 @@ namespace nxlangs{
 		std::vector<std::string> settingsmenu;
 		std::vector<std::string> network;
 		
-	} lang_struct;
+	};
 	
 	
 	extern std::vector<lang_struct> langslist;
