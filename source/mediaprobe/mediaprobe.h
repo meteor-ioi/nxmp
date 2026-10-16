@@ -1,6 +1,7 @@
 #ifndef NXMP_MEDIAPROBE_H
 #define NXMP_MEDIAPROBE_H
 
+#include <switch.h>
 #include <string>
 #include <vector>
 
