@@ -48,6 +48,14 @@ jobs:
           cp -rf /tmp/glm/glm /opt/devkitpro/portlibs/switch/include/
           rm -rf /tmp/glm
 
+      - name: Deploy Complete MPV Headers
+        run: |
+          mkdir -p /opt/devkitpro/portlibs/switch/include/mpv
+          wget -q https://raw.githubusercontent.com/averne/mpv/master/libmpv/client.h -O /opt/devkitpro/portlibs/switch/include/mpv/client.h
+          wget -q https://raw.githubusercontent.com/averne/mpv/master/libmpv/render.h -O /opt/devkitpro/portlibs/switch/include/mpv/render.h
+          wget -q https://raw.githubusercontent.com/averne/mpv/master/libmpv/render_dk3d.h -O /opt/devkitpro/portlibs/switch/include/mpv/render_dk3d.h
+          wget -q https://raw.githubusercontent.com/averne/mpv/master/libmpv/render_gl.h -O /opt/devkitpro/portlibs/switch/include/mpv/render_gl.h || true
+
       - name: Build NXMP NRO
         run: |
           export PATH=$DEVKITPRO/devkitA64/bin:$PATH

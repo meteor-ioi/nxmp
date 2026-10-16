@@ -12,7 +12,7 @@
 
 #include <switch.h>
 #include <deko3d.hpp>
-#include "render_dk3d.h"
+#include <mpv/render_dk3d.h>
 #include "imgui_deko3d.h"
 #include "imgui_nx.h"
 
