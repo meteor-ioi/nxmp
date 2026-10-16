@@ -12,6 +12,10 @@ jobs:
       image: devkitpro/devkita64:latest
 
     steps:
+      - name: Configure safe directory
+        run: |
+          git config --global --add safe.directory '*'
+
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -26,13 +30,31 @@ jobs:
             switch-ntfs-3g switch-libfribidi switch-bzip2 switch-libarchive \
             switch-mbedtls switch-pkg-config switch-harfbuzz switch-libjpeg-turbo \
             switch-dav1d switch-freetype switch-libwebp switch-libssh2 switch-lwext4 \
-            switch-tinyxml2 switch-jansson switch-libopus
+            switch-tinyxml2 switch-jansson switch-libopus || true
+          dkp-pacman -S --noconfirm switch-dvdnav switch-dvdread || true
 
-      - name: Download & Extract Prebuilt NXMP Portlibs
+      - name: Download & Merge Prebuilt NXMP Portlibs
         run: |
           wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/nxmp.nightly.portibs.zip -O /tmp/portlibs.zip
-          unzip -o -q /tmp/portlibs.zip -d /opt/devkitpro/portlibs/
-          rm -f /tmp/portlibs.zip
+          mkdir -p /tmp/extracted_portlibs
+          unzip -o -q /tmp/portlibs.zip -d /tmp/extracted_portlibs
+          mkdir -p /opt/devkitpro/portlibs/switch
+          if [ -d /tmp/extracted_portlibs/switch ]; then
+            cp -rf /tmp/extracted_portlibs/switch/* /opt/devkitpro/portlibs/switch/
+          else
+            cp -rf /tmp/extracted_portlibs/* /opt/devkitpro/portlibs/switch/
+          fi
+          # Also check secondary portlibs if needed
+          wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/portlibs-https.rar -O /tmp/portlibs2.rar || true
+          if [ -f /tmp/portlibs2.rar ]; then
+            7z x /tmp/portlibs2.rar -o/tmp/extracted_portlibs2 -y > /dev/null 2>&1 || true
+            if [ -d /tmp/extracted_portlibs2/switch ]; then
+              cp -rf /tmp/extracted_portlibs2/switch/* /opt/devkitpro/portlibs/switch/ || true
+            elif [ -d /tmp/extracted_portlibs2 ]; then
+              cp -rf /tmp/extracted_portlibs2/* /opt/devkitpro/portlibs/switch/ || true
+            fi
+          fi
+          rm -rf /tmp/portlibs* /tmp/extracted_*
 
       - name: Build NXMP
         run: |
