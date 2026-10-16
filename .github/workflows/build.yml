@@ -24,7 +24,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          apt-get update && apt-get install -y unzip wget p7zip-full
+          apt-get update && apt-get install -y unzip wget p7zip-full git
 
       - name: Deploy Author's Precompiled NXMP Portlibs
         run: |
@@ -41,6 +41,12 @@ jobs:
             7z x /tmp/portlibs-https.rar -o/opt/devkitpro/portlibs/ -y > /dev/null 2>&1 || true
           fi
           rm -f /tmp/portlibs*
+
+      - name: Deploy Header-Only GLM
+        run: |
+          git clone --depth 1 https://github.com/g-truc/glm.git /tmp/glm
+          cp -rf /tmp/glm/glm /opt/devkitpro/portlibs/switch/include/
+          rm -rf /tmp/glm
 
       - name: Build NXMP NRO
         run: |
