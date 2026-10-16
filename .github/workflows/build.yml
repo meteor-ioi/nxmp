@@ -1,0 +1,49 @@
+name: Build NXMP
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: devkitpro/devkita64:latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install system tools and switch dependencies
+        run: |
+          apt-get update && apt-get install -y unzip wget p7zip-full
+          dkp-pacman -Syu --noconfirm
+          dkp-pacman -S --noconfirm \
+            switch-curl switch-libass switch-libvpx switch-glm switch-libpng \
+            switch-ntfs-3g switch-libfribidi switch-bzip2 switch-libarchive \
+            switch-mbedtls switch-pkg-config switch-harfbuzz switch-libjpeg-turbo \
+            switch-dav1d switch-freetype switch-libwebp switch-libssh2 switch-lwext4 \
+            switch-tinyxml2 switch-jansson switch-libopus
+
+      - name: Download & Extract Prebuilt NXMP Portlibs
+        run: |
+          wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/nxmp.nightly.portibs.zip -O /tmp/portlibs.zip
+          unzip -o -q /tmp/portlibs.zip -d /opt/devkitpro/portlibs/
+          rm -f /tmp/portlibs.zip
+
+      - name: Build NXMP
+        run: |
+          export PATH=$DEVKITPRO/devkitA64/bin:$PATH
+          make clean || true
+          make -j$(nproc)
+
+      - name: Upload NXMP NRO Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxmp-nro-release
+          path: |
+            *.nro
+            *.nacp

@@ -17,6 +17,130 @@ namespace Windows {
 		movenavfocus = true;
 		navfocusstring = foldername;
 	}
+
+	struct BrowserThumb {
+		Texture tex;
+		bool loaded = false;
+		bool custom = false;
+	};
+	static std::map<std::string, BrowserThumb> g_thumb_cache;
+
+	static Texture GetEntryThumbnail(const FS::FileEntry& entry) {
+		if (g_thumb_cache.find(entry.path) != g_thumb_cache.end()) {
+			return g_thumb_cache[entry.path].tex;
+		}
+
+		BrowserThumb bt;
+		bt.loaded = true;
+
+		if (entry.type == FS::FileEntryType::Directory) {
+			std::string candidates[] = {
+				entry.path + "/cover.jpg",
+				entry.path + "/cover.png",
+				entry.path + "/folder.jpg",
+				entry.path + "/folder.png",
+				entry.path + "/poster.jpg",
+				entry.path + ".jpg",
+				entry.path + ".png"
+			};
+			for (const auto& c : candidates) {
+				FILE* f = fopen(c.c_str(), "rb");
+				if (f) {
+					fclose(f);
+					bt.tex = imgloader->OpenImageFile(c);
+					if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+						bt.custom = true;
+						g_thumb_cache[entry.path] = bt;
+						return bt.tex;
+					}
+				}
+			}
+			bt.tex = imgloader->icons.FolderTexture;
+		} else {
+			std::string base_no_ext = entry.path;
+			size_t dot_pos = base_no_ext.find_last_of('.');
+			if (dot_pos != std::string::npos) {
+				base_no_ext = base_no_ext.substr(0, dot_pos);
+			}
+			std::string candidates[] = {
+				base_no_ext + ".jpg",
+				base_no_ext + ".png",
+				base_no_ext + ".jpeg"
+			};
+			for (const auto& c : candidates) {
+				FILE* f = fopen(c.c_str(), "rb");
+				if (f) {
+					fclose(f);
+					bt.tex = imgloader->OpenImageFile(c);
+					if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+						bt.custom = true;
+						g_thumb_cache[entry.path] = bt;
+						return bt.tex;
+					}
+				}
+			}
+			if (entry.mediatype == FS::FileMediaType::Image) {
+				bt.tex = imgloader->OpenImageFile(entry.path);
+				if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+					bt.custom = true;
+					g_thumb_cache[entry.path] = bt;
+					return bt.tex;
+				}
+				bt.tex = imgloader->icons.ImageTexture;
+			} else if (entry.mediatype == FS::FileMediaType::PDF) {
+				bt.tex = imgloader->icons.PDFTexture;
+			} else if (entry.mediatype == FS::FileMediaType::Archive) {
+				bt.tex = imgloader->icons.ArchiveTexture;
+			} else {
+				bt.tex = imgloader->icons.FileTexture;
+			}
+		}
+
+		g_thumb_cache[entry.path] = bt;
+		return bt.tex;
+	}
+
+	static void HandleOpenEntry(const FS::FileEntry& curEntry, int n, bool& changefolder, bool& triggerselect) {
+		if (curEntry.type == FS::FileEntryType::Directory) {
+			triggerselect = true;
+			changefolder = true;
+			filebrowser->DirList(curEntry.path, configini->getshowHidden(false), Utility::getMediaExtensions());
+		} else {
+			item.laststate = item.state;
+			std::string fullurl = filebrowser->getOpenUrlPart() + curEntry.path;
+			if (Utility::isImageExtension(fullurl)) {
+				if (filebrowser->getfileContentsThreaded(curEntry.path)) {
+					item.state = MENU_STATE_IMGVIEWER;
+					Windows::setImageZoom(1.0f);
+					Windows::loadimage = true;
+				}
+			} else if (Utility::isPDFExtension(fullurl)) {
+				if (filebrowser->getfileContentsThreaded(curEntry.path)) {
+					item.state = MENU_STATE_PDFVIEWER;
+					Windows::setPDFImageZoom(1.0f);
+					Windows::pdf_loadimage = true;
+				}
+			} else if (Utility::isISOExtension(fullurl)) {
+				item.popupstate = POPUP_STATE_ISOOPENCHOOSE;
+				item.popuparg = fullurl;
+			} else if (Utility::isArchiveExtension(fullurl)) {
+				filebrowser->OpenArchive(fullurl);
+				filebrowser->DirList(filebrowser->getBasePath(), configini->getshowHidden(false), Utility::getMediaExtensions());
+			} else if (Utility::isM3UExtension(fullurl) && !Utility::startWith(fullurl, "m3u0:/", false)) {
+				filebrowser->OpenM3U(fullurl);
+				filebrowser->DirList(filebrowser->getBasePath(), configini->getshowHidden(false), Utility::getMediaExtensions());
+			} else {
+				filebrowser->clearChecked();
+				libmpv->loadFile(fullurl);
+				if (configini->getDbActive(true)) {
+					libmpv->getFileInfo()->resume = sqlitedb->getResume(fullurl);
+					if (libmpv->getFileInfo()->resume > 0) {
+						item.popupstate = POPUP_STATE_RESUME;
+					}
+				}
+			}
+		}
+	}
 	
 	void UniBrowserWindow(/*bool *focus, bool *first_item*/) {
 		 Windows::SetupWindow();
@@ -32,7 +156,22 @@ namespace Windows {
 			ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, {0, 5});
 			
 			if (ImGui::BeginMenuBar()) {
-				ImGui::Text("current path: %s",filebrowser->getCurrentPath().c_str());
+				ImGui::Text("path: %s", filebrowser->getCurrentPath().c_str());
+
+				float cur_w = ImGui::GetWindowWidth();
+				ImGui::SameLine(cur_w - 340.0f * multiplyRes);
+				std::string viewlabel = (browserViewMode == 1) ? "[模式: 缩略图]" : "[模式: 列表]";
+				if (ImGui::SmallButton(viewlabel.c_str())) {
+					browserViewMode = 1 - browserViewMode;
+				}
+				ImGui::SameLine();
+				std::string themelabel = (configini->getThemeColor(true) == 1) ? "[主题: 白天]" : "[主题: 黑夜]";
+				if (ImGui::SmallButton(themelabel.c_str())) {
+					int nxt = (configini->getThemeColor(true) == 1) ? 0 : 1;
+					configini->setThemeColor(nxt);
+					SetColorTheme(nxt);
+				}
+
 				ImGui::EndMenuBar();
 			}
 			float total_w = ImGui::GetContentRegionAvail().x;
@@ -69,7 +208,9 @@ namespace Windows {
 				ImGui::SetCursorPosY( (ImGui::GetWindowHeight() - ImGui::CalcTextSize(filebrowser->errormsg.c_str()).y) / 2.f);
 				ImGui::Text("%s",filebrowser->errormsg.c_str());
 			}else{
-				if (ImGui::BeginTable("table1", 3,/*ImGuiTableFlags_RowBg|*/ImGuiTableFlags_ScrollY)){
+				bool changefolder = false;
+				if (browserViewMode == 0) {
+					if (ImGui::BeginTable("table1", 3,/*ImGuiTableFlags_RowBg|*/ImGuiTableFlags_ScrollY)){
 					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed, (910.0f*multiplyRes -2 * ImGui::GetStyle().ItemSpacing.x)); 
 					ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_WidthFixed, 125.0f*multiplyRes);
 					ImGui::TableSetupColumn("Date", ImGuiTableColumnFlags_WidthFixed,255.f*multiplyRes);       
@@ -101,7 +242,7 @@ namespace Windows {
 						 
 					}
 					
-					bool changefolder = false;
+					changefolder = false;
 					while (clipper.Step())
 					{
 						for (unsigned int n = clipper.DisplayStart; n < clipper.DisplayEnd; n++){
@@ -154,57 +295,7 @@ namespace Windows {
 							ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_SpanAllColumns;
 							if(item.selectionstate != FILE_SELECTION_CHECKBOX){
 								if (ImGui::Selectable(itemid.c_str(), selected == n,selectable_flags,ImVec2(0,30.0f*multiplyRes))){
-										if(filebrowser->getCurrList()[n].type == FS::FileEntryType::Directory){
-										triggerselect = true;
-										changefolder = true;
-										filebrowser->DirList(thislist[n].path,configini->getshowHidden(false),Utility::getMediaExtensions());
-									} else{
-										item.laststate = item.state;
-										
-										if(Utility::isImageExtension(filebrowser->getOpenUrlPart()+thislist[n].path)){
-											
-											if(filebrowser->getfileContentsThreaded(thislist[n].path)){
-												item.state = MENU_STATE_IMGVIEWER;
-												Windows::setImageZoom(1.0f);
-												Windows::loadimage = true;
-											}
-											
-										}else if(Utility::isPDFExtension(filebrowser->getOpenUrlPart()+thislist[n].path)){
-											if(filebrowser->getfileContentsThreaded(thislist[n].path)){
-												item.state = MENU_STATE_PDFVIEWER;
-												Windows::setPDFImageZoom(1.0f);
-												Windows::pdf_loadimage = true;
-											}
-										}else if(Utility::isISOExtension(filebrowser->getOpenUrlPart()+thislist[n].path)){
-											item.popupstate = POPUP_STATE_ISOOPENCHOOSE;
-											item.popuparg = filebrowser->getOpenUrlPart()+thislist[n].path;
-											//filebrowser->OpenArchive(filebrowser->getOpenUrlPart()+thislist[n].path);
-											//filebrowser->DirList(filebrowser->getBasePath(),configini->getshowHidden(false),Utility::getMediaExtensions());
-										}else if(Utility::isArchiveExtension(filebrowser->getOpenUrlPart()+thislist[n].path)){
-											filebrowser->OpenArchive(filebrowser->getOpenUrlPart()+thislist[n].path);
-											filebrowser->DirList(filebrowser->getBasePath(),configini->getshowHidden(false),Utility::getMediaExtensions());
-										}else if(Utility::isM3UExtension(filebrowser->getOpenUrlPart()+thislist[n].path) && Utility::startWith(filebrowser->getOpenUrlPart()+thislist[n].path,"m3u0:/",false) == false){
-											filebrowser->OpenM3U(filebrowser->getOpenUrlPart()+thislist[n].path);
-											filebrowser->DirList(filebrowser->getBasePath(),configini->getshowHidden(false),Utility::getMediaExtensions());
-										}else{
-											if(Utility::startWith(filebrowser->getOpenUrlPart()+thislist[n].path,"m3u0:/",false)){
-												//playlist->clearPlaylist();
-												filebrowser->clearChecked();
-												libmpv->loadFile(filebrowser->getOpenUrlPart()+thislist[n].path);
-												
-											}else{
-												//playlist->clearPlaylist();
-												filebrowser->clearChecked();
-												libmpv->loadFile(filebrowser->getOpenUrlPart()+thislist[n].path);
-												if(configini->getDbActive(true)){
-													libmpv->getFileInfo()->resume = sqlitedb->getResume(filebrowser->getOpenUrlPart()+thislist[n].path);
-													if(libmpv->getFileInfo()->resume>0){
-														item.popupstate = POPUP_STATE_RESUME;
-													}
-												}
-											}
-										}
-									}
+									HandleOpenEntry(thislist[n], n, changefolder, triggerselect);
 								}
 							}else{
 								ImGui::Dummy(ImVec2(0,ImGui::CalcTextSize("A").y + ImGui::GetStyle().FramePadding.y * 2));
@@ -278,16 +369,100 @@ namespace Windows {
 							
 						}
 					}
-					movenavfocus = false;
-					if(changefolder){
-						SetBrowserNav("");
-						changefolder = false;
-					}
-					if(item.popupstate == POPUP_STATE_NONE){
-						ImGui::SetWindowFocus();
-					}
 					ImGui::EndTable();
-					
+				} else {
+					// 缩略图海报墙网格视图 (Grid View)
+					float avail_w = ImGui::GetContentRegionAvail().x;
+					float spacing = 14.0f * multiplyRes;
+					int cols = 4;
+					if (avail_w > 0) {
+						cols = (int)(avail_w / (270.0f * multiplyRes));
+						if (cols < 2) cols = 2;
+						if (cols > 5) cols = 5;
+					}
+					float card_w = (avail_w - (cols - 1) * spacing) / cols;
+					float card_h = 205.0f * multiplyRes;
+					float thumb_h = 135.0f * multiplyRes;
+
+					ImDrawList* draw_list = ImGui::GetWindowDrawList();
+					bool is_dark = (configini->getThemeColor(true) == 0 || (configini->getThemeColor(true) == 2 && Window_Bg_color.x < 0.5f));
+
+					for (size_t n = 0; n < thislist.size(); n++) {
+						ImGui::PushID((int)n);
+						ImVec2 p = ImGui::GetCursorScreenPos();
+						std::string btn_id = "##gridcard" + std::to_string(n);
+
+						bool is_selected = (item.fileHoveredidx == (int)n);
+						if (movenavfocus && navfocusstring == thislist[n].name) {
+							ImGui::SetKeyboardFocusHere();
+						}
+
+						bool clicked = ImGui::Selectable(btn_id.c_str(), is_selected, ImGuiSelectableFlags_None, ImVec2(card_w, card_h));
+						bool is_hovered = ImGui::IsItemHovered();
+						bool is_focused = ImGui::IsItemFocused();
+
+						if (is_hovered || is_focused) {
+							item.fileHoveredidx = (int)n;
+						}
+
+						// 1. 卡片底色 (昼夜自适应)
+						ImU32 card_bg = is_dark ? IM_COL32(38, 38, 42, 235) : IM_COL32(245, 246, 248, 255);
+						if (is_hovered || is_focused) {
+							card_bg = is_dark ? IM_COL32(52, 54, 60, 255) : IM_COL32(235, 238, 244, 255);
+						}
+						draw_list->AddRectFilled(p, ImVec2(p.x + card_w, p.y + card_h), card_bg, 8.0f * multiplyRes);
+
+						// 2. 聚焦高亮外框 (手柄与触控状态)
+						if (is_hovered || is_focused) {
+							draw_list->AddRect(p, ImVec2(p.x + card_w, p.y + card_h), ImGui::GetColorU32(Active_color), 8.0f * multiplyRes, 0, 3.0f * multiplyRes);
+						} else {
+							ImU32 border_col = is_dark ? IM_COL32(65, 65, 72, 100) : IM_COL32(215, 218, 224, 180);
+							draw_list->AddRect(p, ImVec2(p.x + card_w, p.y + card_h), border_col, 8.0f * multiplyRes, 0, 1.0f);
+						}
+
+						// 3. 绘制缩略图
+						Texture thumb = GetEntryThumbnail(thislist[n]);
+						ImVec2 img_p1 = ImVec2(p.x + 8.0f * multiplyRes, p.y + 8.0f * multiplyRes);
+						ImVec2 img_p2 = ImVec2(p.x + card_w - 8.0f * multiplyRes, p.y + 8.0f * multiplyRes + thumb_h);
+						draw_list->AddRectFilled(img_p1, img_p2, is_dark ? IM_COL32(20, 20, 24, 255) : IM_COL32(225, 227, 232, 255), 6.0f * multiplyRes);
+						draw_list->AddImage((void*)(intptr_t)thumb.id, img_p1, img_p2);
+
+						// 4. 徽标 (目录/大小)
+						std::string tag_str = (thislist[n].type == FS::FileEntryType::Directory) ? "目录" : Utility::humanSize(thislist[n].size);
+						ImVec2 tag_sz = ImGui::CalcTextSize(tag_str.c_str());
+						ImVec2 tag_p1 = ImVec2(img_p2.x - tag_sz.x - 10.0f * multiplyRes, img_p2.y - tag_sz.y - 6.0f * multiplyRes);
+						ImVec2 tag_p2 = ImVec2(img_p2.x - 4.0f * multiplyRes, img_p2.y - 4.0f * multiplyRes);
+						draw_list->AddRectFilled(tag_p1, tag_p2, IM_COL32(0, 0, 0, 190), 4.0f * multiplyRes);
+						draw_list->AddText(ImVec2(tag_p1.x + 3.0f * multiplyRes, tag_p1.y + 1.0f * multiplyRes), IM_COL32(255, 255, 255, 240), tag_str.c_str());
+
+						// 5. 标题文本 (截短显示防超出)
+						std::string display_name = thislist[n].name;
+						if (display_name.length() > 22) {
+							display_name = display_name.substr(0, 19) + "...";
+						}
+						ImVec2 text_pos = ImVec2(p.x + 10.0f * multiplyRes, p.y + thumb_h + 16.0f * multiplyRes);
+						draw_list->AddText(text_pos, ImGui::GetColorU32(Text_color), display_name.c_str());
+
+						if (clicked) {
+							HandleOpenEntry(thislist[n], (int)n, changefolder, triggerselect);
+						}
+
+						ImGui::PopID();
+
+						if ((n + 1) % cols != 0 && (n + 1) < thislist.size()) {
+							ImGui::SameLine(0.0f, spacing);
+						}
+					}
+				}
+
+				movenavfocus = false;
+				if(changefolder){
+					SetBrowserNav("");
+					changefolder = false;
+					g_thumb_cache.clear();
+				}
+				if(item.popupstate == POPUP_STATE_NONE){
+					ImGui::SetWindowFocus();
 				}
 			}
 			ImGui::EndChild();

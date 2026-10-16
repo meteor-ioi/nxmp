@@ -3,3 +3,5 @@ build-win32/
 nxmp/
 nxmp.*
 compile.bat
+dist/
+.DS_Store

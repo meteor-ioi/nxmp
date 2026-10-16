@@ -748,7 +748,7 @@ namespace Windows {
 						if(ImGui::Selectable(ordercomboid.c_str(),false)){
 							settingsview_combopopup = -1;
 							configini->setThemeColor(n);
-							//SetColorTheme(configini->getThemeColor(true));
+							SetColorTheme(configini->getThemeColor(true));
 						}	
 						ImGui::SameLine();
 						ImGui::Text(themecolorlist[n]);	

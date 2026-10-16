@@ -126,6 +126,8 @@ ImVec4 HeaderHover_color = ImVec4(0.12f, 0.12f, 0.12f, 1.00f);
 ImVec4 Button_color = ImVec4(0.0f, 0.0f, 0.0f, 0.00f);
 ImVec4 ButtonActive_color = ImVec4(0, 255, 203, 0.30f);
 
+int browserViewMode = 1; // Default to Grid Thumbnail View
+
 float CurrentVolume = 0.0f;
 
 

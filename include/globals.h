@@ -21,7 +21,7 @@
 	extern ImVec4 Button_color;
 	extern ImVec4 ButtonActive_color;
 	
-	
-
+	extern void SetColorTheme(int themecolor);
+	extern int browserViewMode; // 0: List View, 1: Grid Thumbnail View
 	
 #endif
