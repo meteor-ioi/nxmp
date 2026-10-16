@@ -17,6 +17,7 @@
 #define MPV_CLIENT_API_RENDER_DK3D_H_
 
 #include <deko3d.h>
+#include <mpv/client.h>
 #include <mpv/render.h>
 
 #ifdef __cplusplus

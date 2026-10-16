@@ -3,7 +3,6 @@
 
 
 #include "stb_image.h"
-#include <turbojpeg.h>
 
 enum{
 	JPGFILE,
@@ -183,38 +182,8 @@ int guessImageFormat(std::string path){
 
 
 unsigned char * jpg_decode(unsigned char *_img_data,int _size,int *width, int *height, int *channels){
-	
-	tjhandle _jpegDecompressor = tjInitDecompress();
-	
-	if(_jpegDecompressor == NULL){
-		*width = 0; *height = 0; *channels = 0;
-		return NULL;
-	}
-
-	int jpegSubsamp;
-	tjDecompressHeader2(_jpegDecompressor, _img_data, _size, width, height, &jpegSubsamp);
-	
-	if(tjDecompressHeader2(_jpegDecompressor, _img_data, _size, width, height, &jpegSubsamp) != 0
-		|| *width <= 0 || *height <= 0){
-		tjDestroy(_jpegDecompressor);
-		*width = 0; *height = 0; *channels = 0;
-		return NULL;
-	}
-
-	int img_w = *width;
-	int img_h = *height;
-
-	unsigned char * buffer = (unsigned char *)malloc(img_w*img_h*4);
-	if(buffer == NULL){
-		tjDestroy(_jpegDecompressor);
-		*width = 0; *height = 0; *channels = 0;
-		return NULL;
-	}
 	*channels = 4;
-	tjDecompress2(_jpegDecompressor, _img_data, _size, buffer, img_w, 0/*pitch*/, img_h, TJPF_RGBA, TJFLAG_FASTDCT);
-
-	tjDestroy(_jpegDecompressor);
-	return buffer;
+	return stbi_load_from_memory(_img_data, _size, width, height, NULL, 4);
 }
 
 

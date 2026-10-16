@@ -8,7 +8,7 @@
 
 
 #ifdef DEKO3D_BACKEND
-#include <mpv/render_dk3d.h>
+#include "render_dk3d.h"
 #endif
 
 
