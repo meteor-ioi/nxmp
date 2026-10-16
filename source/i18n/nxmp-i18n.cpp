@@ -1,5 +1,6 @@
 #include "nxmp-i18n.h"
 
+#include <jansson.h>
 #include "nxmp-en.h"
 #include "nxmp-it.h"
 #include "logger.h"
