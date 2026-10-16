@@ -43,8 +43,9 @@ jobs:
           rm -f /tmp/portlibs*
 
       - name: Build and install jansson for Switch
+        shell: bash
         run: |
-          [ -f /opt/devkitpro/switchvars.sh ] && source /opt/devkitpro/switchvars.sh
+          [ -f /opt/devkitpro/switchvars.sh ] && . /opt/devkitpro/switchvars.sh
           git clone --depth 1 https://github.com/akheron/jansson.git /tmp/jansson
           cd /tmp/jansson
           mkdir build && cd build
