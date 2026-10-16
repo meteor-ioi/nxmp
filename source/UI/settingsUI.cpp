@@ -6,8 +6,6 @@
 #include "localfiles.h"
 #include "Enigma2.h"
 
-#include "updater.h"
-
 #include "nxmp-i18n.h"
 
 

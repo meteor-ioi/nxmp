@@ -1,6 +1,5 @@
 #include "nxmp-i18n.h"
 
-#include <jansson.h>
 #include "nxmp-en.h"
 #include "nxmp-it.h"
 #include "logger.h"
@@ -41,87 +40,7 @@ namespace nxlangs{
 	}
 	
 	void ParseAddLangfile(std::string _path){
-		
-		
-		json_t * root = NULL;
-		json_error_t error;
-		
-		
-		
-		root = json_load_file(_path.c_str(), 0, &error);
-		if (!root)
-			NXLOG::DEBUGLOG("ERROR PARSING JSON %s\n",_path.c_str());
-		
-	
-		if (!json_is_object(root))
-		{
-			
-			json_decref(root);
-			return;
-		}
-		
-		
-		lang_struct tmplang;
-		
-		tmplang.id = langslist.size();
-		
-		json_t * authorele = NULL;    
-		authorele = json_object_get(root, "author");
-		tmplang.author = json_string_value(authorele);
-		json_t * langnameele = NULL;    
-		langnameele = json_object_get(root, "langname");
-		tmplang.name = json_string_value(langnameele);
-		tmplang.status = true;
-		tmplang.native = true;
-		json_t * mainmenuarray = NULL;
-		json_t * mainmenuarray_element = NULL;
-		mainmenuarray = json_object_get(root, "mainmenu");
-		for (int i = 0; i < (int)json_array_size(mainmenuarray); i++){
-			mainmenuarray_element = json_array_get(mainmenuarray, i);
-			tmplang.mainmenu.push_back(json_string_value(mainmenuarray_element));
-			
-		}
-		json_t * commonarray = NULL;
-		json_t * commonarray_element = NULL;
-		commonarray = json_object_get(root, "common");
-		for (int i = 0; i < (int)json_array_size(commonarray); i++){
-			commonarray_element = json_array_get(commonarray, i);
-			tmplang.common.push_back(json_string_value(commonarray_element));
-			
-		}
-		json_t * popuparray = NULL;
-		json_t * popuparray_element = NULL;
-		popuparray = json_object_get(root, "popup");
-		for (int i = 0; i < (int)json_array_size(popuparray); i++){
-			popuparray_element = json_array_get(popuparray, i);
-			tmplang.popup.push_back(json_string_value(popuparray_element));
-			
-		}
-		json_t * settingsarray = NULL;
-		json_t * settingsarray_element = NULL;
-		settingsarray = json_object_get(root, "settingsmenu");
-		for (int i = 0; i < (int)json_array_size(settingsarray); i++){
-			settingsarray_element = json_array_get(settingsarray, i);
-			tmplang.settingsmenu.push_back(json_string_value(settingsarray_element));
-			
-		}
-		json_t * networkarray = NULL;
-		json_t * networkarray_element = NULL;
-		networkarray = json_object_get(root, "network");
-		for (int i = 0; i < (int)json_array_size(networkarray); i++){
-			networkarray_element = json_array_get(networkarray, i);
-			tmplang.network.push_back(json_string_value(networkarray_element));
-			
-		}
-		
-		tmplang.filepath = _path;
-		langslist.push_back(tmplang);
-		json_decref(root);
-		
-		
-		
-
-	
+		// Slim build: embedded languages used, json external parsing disabled
 	}
 	
 	

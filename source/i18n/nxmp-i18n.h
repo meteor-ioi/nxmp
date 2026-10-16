@@ -14,7 +14,6 @@
 #include <dirent.h>
 #include <string>
 #include <vector>
-#include <jansson.h>
 #include <switch.h>
 
 namespace nxlangs{

@@ -24,7 +24,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          apt-get update && apt-get install -y unzip wget p7zip-full cmake git
+          apt-get update && apt-get install -y unzip wget p7zip-full
 
       - name: Deploy Author's Precompiled NXMP Portlibs
         run: |
@@ -41,21 +41,6 @@ jobs:
             7z x /tmp/portlibs-https.rar -o/opt/devkitpro/portlibs/ -y > /dev/null 2>&1 || true
           fi
           rm -f /tmp/portlibs*
-
-      - name: Build and install jansson for Switch
-        shell: bash
-        run: |
-          [ -f /opt/devkitpro/switchvars.sh ] && . /opt/devkitpro/switchvars.sh
-          git clone --depth 1 https://github.com/akheron/jansson.git /tmp/jansson
-          cd /tmp/jansson
-          mkdir build && cd build
-          cmake -DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/switch.cmake \
-                -DCMAKE_INSTALL_PREFIX=/opt/devkitpro/portlibs/switch \
-                -DJANSSON_BUILD_SHARED_LIBS=OFF \
-                -DJANSSON_BUILD_DOCS=OFF \
-                -DJANSSON_EXAMPLES=OFF \
-                ..
-          make -j$(nproc) install
 
       - name: Build NXMP NRO
         run: |
