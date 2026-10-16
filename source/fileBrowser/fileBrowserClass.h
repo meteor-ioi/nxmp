@@ -11,7 +11,6 @@
 #include "libarchivefs.h"
 #include "ftpfs.h"
 #include "m3u8fs.h"
-#include "PDFClass.h"
 
 
 #include "utils.h"
@@ -120,7 +119,7 @@ protected:
 	CARCHFS * archfs = nullptr;
 	CFTPFS *ftpfs = nullptr;
 	CM3U8FS *m3u8fs = nullptr;
-	CPDFClass *PDF = nullptr;
+	void *PDF = nullptr;
 	
 
 private:

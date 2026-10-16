@@ -2,16 +2,10 @@
 #define NXMP_MEDIAPROBE_H
 
 #include <string>
-
-extern "C"
-{
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-}
+#include <vector>
 
 #include "logger.h"
 #include "playlist.h"
-
 
 class CMediaProbe{
 public:
@@ -25,13 +19,10 @@ public:
 		bool exitThread = false;
 		void StartMediaProbeThread();
 		Thread t0;
-		
-		AVFormatContext *pFormatContext;
 	
 private:
 	
 
 };
-
 
 #endif

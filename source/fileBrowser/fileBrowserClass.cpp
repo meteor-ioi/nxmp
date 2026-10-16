@@ -139,9 +139,7 @@
 		if(m3u8fs!= nullptr){
 			delete m3u8fs;
 		}
-		if(PDF!= nullptr){
-			delete PDF;
-		}
+
 		
 		
 		
@@ -724,30 +722,21 @@
 	}
 	
 	int CFileBrowser::OpenPDF(unsigned char ** _image_data,int *_w,int *_h){
-		if(PDF!=nullptr)delete PDF;
-		PDF = new CPDFClass(LoadedFile->mem,LoadedFile->size);
-		return PDF->Render_PDF_Page(0,200.0,_image_data,_w,_h);
-		
+		return -1;
 	}
 	
 	int CFileBrowser::getNextPDFPage(unsigned char ** _image_data,int *_w,int *_h){
-		if(PDF==nullptr)return -1;
-		if(PDF->getCurrentPage()>=PDF->getPageCount())return -1;
-		return PDF->Render_PDF_Page(PDF->getCurrentPage()+1,200.0,_image_data,_w,_h);
+		return -1;
 	}
 	int CFileBrowser::getPrevPDFPage(unsigned char ** _image_data,int *_w,int *_h){
-		if(PDF==nullptr)return -1;
-		if(PDF->getCurrentPage()==0)return -1;
-		return PDF->Render_PDF_Page(PDF->getCurrentPage()-1,200.0,_image_data,_w,_h);
+		return -1;
 	}
 	
 	int CFileBrowser::getPDFPageCount(){
-		if(PDF == nullptr )return -1;
-		return PDF->getPageCount();
+		return -1;
 	}
 	int CFileBrowser::getPDFCurrentPage(){
-		if(PDF == nullptr )return -1;
-		return PDF->getCurrentPage();
+		return -1;
 	}
 	
 	
