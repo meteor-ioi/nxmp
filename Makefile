@@ -82,7 +82,14 @@ ASFLAGS	:=	-g $(ARCH)
 LDFLAGS	=	-specs=$(DEVKITPRO)/libnx/switch.specs -g $(ARCH) -Wl,-Map,$(notdir $*.map)
 
 
-LIBS	:=  -lmpv `curl-config --libs` `aarch64-none-elf-pkg-config --libs libavformat libavcodec libavutil libavfilter libswscale libpostproc` -llzma -lopus -lvpx -lass -lharfbuzz -lfreetype -lfribidi -lfreetype  -lstdc++ -ldav1d -lpng -lbz2 -ltinyxml2 -llua5.1 -lssh2 -lmbedcrypto -lmbedx509 -lmbedtls -lmbedcrypto -lmbedx509 -lmbedtls -lsqlite3 -lsmb2  -lnfs -lusbhsfs -lntfs-3g -llwext4 -ldeko3d -larchive -lplacebo -lexpat -llzma -lzstd -llz4 -lbz2 -lz -lnx -lc -lz
+LIBS	:= -Wl,--start-group \
+	-lmpv -lavformat -lavcodec -lavfilter -lswscale -lswresample -lavutil \
+	-lEGL -lglapi -ldrm_nouveau -lSDL2 \
+	-lcurl -llzma -lopus -lvpx -lass -lharfbuzz -lfreetype -lfribidi \
+	-lstdc++ -ldav1d -lpng -lbz2 -ltinyxml2 -llua -lssh2 \
+	-lmbedcrypto -lmbedx509 -lmbedtls -lsqlite3 -lsmb2 -lnfs -lusbhsfs \
+	-lntfs-3g -llwext4 -ldeko3d -larchive -lexpat -lzstd -llz4 -lz -lnx -lc -lm \
+	-Wl,--end-group
 
 
 

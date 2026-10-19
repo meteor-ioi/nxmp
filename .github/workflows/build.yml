@@ -25,6 +25,7 @@ jobs:
       - name: Install build tools
         run: |
           apt-get update && apt-get install -y unzip wget p7zip-full git unar
+          dkp-pacman -Sy --noconfirm switch-dav1d switch-libarchive
 
       - name: Deploy Author's Precompiled NXMP Portlibs
         run: |
