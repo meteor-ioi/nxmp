@@ -11,8 +11,8 @@
 #include "playlist.h"
 
 
-//#define USB_USE_EVENT_SYSTEM
-#define USB_USE_CALLBACK_SYSTEM
+#define USB_USE_EVENT_SYSTEM
+//#define USB_USE_CALLBACK_SYSTEM
 
 
 
