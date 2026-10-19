@@ -8,7 +8,7 @@
 #include "smb2fs.h"
 #include "sshfs.h"
 #include "nfsfs.h"
-#include "libarchivefs.h"
+//#include "libarchivefs.h"
 #include "ftpfs.h"
 #include "m3u8fs.h"
 

@@ -43,9 +43,9 @@ endif
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source/i18n libs/nxmp-devoptabs/devoptabsfs/nfsfs/ libs/nxmp-devoptabs/devoptabsfs/smb2fs libs/nxmp-devoptabs/devoptabsfs/sshfs libs/nxmp-devoptabs/devoptabsfs/m3u8fs libs/nxmp-devoptabs/devoptabsfs/ftpfs libs/nxmp-devoptabs/devoptabsfs/libarchivefs source/backends/native-deko3d source/backends source/iniparser source/imgloader source/networkshareclass source/UI/textscroller source/mediaprobe libs/imgui_toggle source/fileBrowser source/logger source/stats libs/imgui libs/imgui/misc/freetype source source/curldownloader source/touchcontrols source/playlist source/shadermania source/eqpreset source/database source/UI source/remotefs/UPNP source/remotefs/nfsDir source/remotefs/smb2 source/remotefs/sshDir source/remotefs/Enigma2 source/localfs source/localfs/usb source/remotefs/ftplib source/remotefs/HTTPDir  source/libmpv 
+SOURCES		:=	source/i18n libs/nxmp-devoptabs/devoptabsfs/nfsfs/ libs/nxmp-devoptabs/devoptabsfs/smb2fs libs/nxmp-devoptabs/devoptabsfs/sshfs libs/nxmp-devoptabs/devoptabsfs/m3u8fs libs/nxmp-devoptabs/devoptabsfs/ftpfs source/backends/native-deko3d source/backends source/iniparser source/imgloader source/networkshareclass source/UI/textscroller source/mediaprobe libs/imgui_toggle source/fileBrowser source/logger source/stats libs/imgui libs/imgui/misc/freetype source source/curldownloader source/touchcontrols source/playlist source/shadermania source/eqpreset source/database source/UI source/remotefs/UPNP source/remotefs/nfsDir source/remotefs/smb2 source/remotefs/sshDir source/remotefs/Enigma2 source/localfs source/localfs/usb source/remotefs/ftplib source/remotefs/HTTPDir  source/libmpv 
 DATA		:=	data
-INCLUDES	:=	libs/nxmp-devoptabs/devoptabsfs/nfsfs/ libs/nxmp-devoptabs/devoptabsfs/smb2fs libs/nxmp-devoptabs/devoptabsfs/sshfs libs/nxmp-devoptabs/devoptabsfs/m3u8fs libs/nxmp-devoptabs/devoptabsfs/ftpfs libs/nxmp-devoptabs/devoptabsfs/libarchivefs source/backends/native-deko3d source/i18n source/backends source/iniparser source/imgloader source/networkshareclass source/UI/textscroller source/mediaprobe libs/imgui_toggle source/fileBrowser source/logger source/stats libs/simpleini libs/imgui include source/curldownloader source/touchcontrols source/playlist source/shadermania source/eqpreset source/database source/remotefs/UPNP source/remotefs/nfsDir source/remotefs/smb2 source/remotefs/sshDir source/remotefs/Enigma2 source/localfs source/localfs/usb source/remotefs/ftplib source/remotefs/HTTPDir source/libmpv
+INCLUDES	:=	libs/nxmp-devoptabs/devoptabsfs/nfsfs/ libs/nxmp-devoptabs/devoptabsfs/smb2fs libs/nxmp-devoptabs/devoptabsfs/sshfs libs/nxmp-devoptabs/devoptabsfs/m3u8fs libs/nxmp-devoptabs/devoptabsfs/ftpfs source/backends/native-deko3d source/i18n source/backends source/iniparser source/imgloader source/networkshareclass source/UI/textscroller source/mediaprobe libs/imgui_toggle source/fileBrowser source/logger source/stats libs/simpleini libs/imgui include source/curldownloader source/touchcontrols source/playlist source/shadermania source/eqpreset source/database source/remotefs/UPNP source/remotefs/nfsDir source/remotefs/smb2 source/remotefs/sshDir source/remotefs/Enigma2 source/localfs source/localfs/usb source/remotefs/ftplib source/remotefs/HTTPDir source/libmpv
 ROMFS		:=	romfs
 
 OUT_SHADERS	:=	shaders
@@ -86,9 +86,9 @@ LIBS	:= -Wl,--start-group \
 	-lmpv -lavformat -lavcodec -lavfilter -lswscale -lswresample -lavutil \
 	-lEGL -lglapi -ldrm_nouveau -lSDL2 \
 	-lcurl -llzma -lopus -lvpx -lass -lharfbuzz -lfreetype -lfribidi \
-	-lstdc++ -ldav1d -lpng -lbz2 -ltinyxml2 -llua -lssh2 \
+	-lstdc++ -lpng -lbz2 -ltinyxml2 -llua -lssh2 \
 	-lmbedcrypto -lmbedx509 -lmbedtls -lsqlite3 -lsmb2 -lnfs -lusbhsfs \
-	-lntfs-3g -llwext4 -ldeko3d -larchive -lexpat -lzstd -llz4 -lz -lnx -lc -lm \
+	-lntfs-3g -llwext4 -ldeko3d -lexpat -lzstd -llz4 -lz -lnx -lc -lm \
 	-Wl,--end-group
 
 
