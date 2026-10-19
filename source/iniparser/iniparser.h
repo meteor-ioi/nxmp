@@ -14,7 +14,7 @@ typedef struct{
 	int exitmode = 0;
 	bool showhidden = false;
 	int sortorder = 0;
-	bool touchenable = false;
+	bool touchenable = true;
 	int themecolor = 2;
 	int playeswipeseek ;
 	int shortseek = 10;

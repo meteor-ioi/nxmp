@@ -57,7 +57,7 @@ jobs:
 
       - name: Build NXMP NRO
         run: |
-          source /opt/devkitpro/switchvars.sh || true
+          . /opt/devkitpro/switchvars.sh || true
           export PORTLIBS=${PORTLIBS:-$DEVKITPRO/portlibs/switch}
           export PATH=$DEVKITPRO/devkitA64/bin:$DEVKITPRO/tools/bin:$PORTLIBS/bin:$PATH
           sed -i 's|#include FT_FREETYPE_H|#include <freetype/freetype.h>|g' libs/imgui/misc/freetype/imgui_freetype.cpp || true

@@ -102,7 +102,7 @@ SQLiteDB::SQLiteDB(std::string _filename){
 }
 
 SQLiteDB::~SQLiteDB(){
-	sqlite3_close_v2(db);
+	sqlite3_close(db);
 	sqlite3_os_end();
 	NXLOG::DEBUGLOG("Deallocator SQLITEDB\n");
 }
