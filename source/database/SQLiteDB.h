@@ -5,6 +5,8 @@
 #include <sqlite3.h>
 #include "logger.h"
 
+struct sqlite3;
+
 class SQLiteDB{
 public:
 	SQLiteDB(std::string _filename);

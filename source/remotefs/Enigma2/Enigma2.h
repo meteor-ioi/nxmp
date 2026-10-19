@@ -11,7 +11,6 @@
 #include <tinyxml2.h>
 
 using namespace std;
-using namespace tinyxml2;
 
 
 struct epgStruct{

@@ -1,5 +1,8 @@
 #include "Enigma2.h"
 #include "utils.h"
+#include <tinyxml2.h>
+
+using namespace tinyxml2;
 
 
 

@@ -35,10 +35,9 @@ jobs:
             cp -rf /opt/devkitpro/portlibs/switch/switch/* /opt/devkitpro/portlibs/switch/
             rm -rf /opt/devkitpro/portlibs/switch/switch
           fi
-          # Also fetch HTTPS addons
-          wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/portlibs-https.rar -O /tmp/portlibs-https.rar || true
-          if [ -f /tmp/portlibs-https.rar ]; then
-            7z x /tmp/portlibs-https.rar -o/opt/devkitpro/portlibs/ -y > /dev/null 2>&1 || true
+          # Ensure freetype headers are accessible at both include/ and include/freetype2/
+          if [ -d /opt/devkitpro/portlibs/switch/include/freetype2 ]; then
+            cp -rn /opt/devkitpro/portlibs/switch/include/freetype2/* /opt/devkitpro/portlibs/switch/include/ || true
           fi
           rm -f /tmp/portlibs*
 
@@ -58,7 +57,13 @@ jobs:
 
       - name: Build NXMP NRO
         run: |
-          export PATH=$DEVKITPRO/devkitA64/bin:$PATH
+          source /opt/devkitpro/switchvars.sh || true
+          export PORTLIBS=${PORTLIBS:-$DEVKITPRO/portlibs/switch}
+          export PATH=$DEVKITPRO/devkitA64/bin:$DEVKITPRO/tools/bin:$PORTLIBS/bin:$PATH
+          sed -i 's|#include FT_FREETYPE_H|#include <freetype/freetype.h>|g' libs/imgui/misc/freetype/imgui_freetype.cpp || true
+          sed -i 's|#include FT_MODULE_H|#include <freetype/ftmodapi.h>|g' libs/imgui/misc/freetype/imgui_freetype.cpp || true
+          sed -i 's|#include FT_GLYPH_H|#include <freetype/ftglyph.h>|g' libs/imgui/misc/freetype/imgui_freetype.cpp || true
+          sed -i 's|#include FT_SYNTHESIS_H|#include <freetype/ftsynth.h>|g' libs/imgui/misc/freetype/imgui_freetype.cpp || true
           make clean || true
           make -j$(nproc)
 

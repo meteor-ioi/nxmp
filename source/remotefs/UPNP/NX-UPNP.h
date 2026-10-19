@@ -27,8 +27,6 @@
 
 #include "nxmp-render.h"
 
-using namespace tinyxml2;
-
 
 #define _GNU_SOURCE
 
