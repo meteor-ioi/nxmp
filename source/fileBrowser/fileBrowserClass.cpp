@@ -5,6 +5,7 @@
 		currentplaylist = _playlist;
 		
 		if(netconfdata.type == "sftp"){
+#ifdef BUILD_SSH
 			if(netconfdata.password != ""){
 				sshfs = new CSSHFS(netconfdata.server,netconfdata.port,netconfdata.username,netconfdata.password,netconfdata.path,"ssh0","ssh0:");
 				connected = sshfs->RegisterFilesystem_v2();
@@ -13,24 +14,33 @@
 				connected = sshfs->RegisterFilesystem_pubkey_v2();
 			
 			}
+#else
+			connected = false;
+#endif
 			basepath = "ssh0:/";
 			title = "SFTP Browser " + netconfdata.server;
 			
 		}
 		
 		if(netconfdata.type == "smb"){
-			
+#ifdef BUILD_SMB2
 			smb2fs = new CSMB2FS(netconfdata.server,netconfdata.username,netconfdata.password,netconfdata.path,"smb0","smb0:");
 			connected = smb2fs->RegisterFilesystem_v2();
+#else
+			connected = false;
+#endif
 			basepath = "smb0:/";
 			title = "SMB Browser " + netconfdata.server;
 			
 		}
 		
 		if(netconfdata.type == "nfs"){
-			
+#ifdef BUILD_NFS
 			nfsfs = new CNFSFS(netconfdata.server,netconfdata.path,"nfs0","nfs0:");
 			connected = nfsfs->RegisterFilesystem_v2();
+#else
+			connected = false;
+#endif
 			basepath = "nfs0:/";
 			currentpath = basepath;
 			title = "NFS Browser " + netconfdata.server;
@@ -72,6 +82,7 @@
 			if(Utility::startWith(path,"/",false)){
 				title = "File Browser";
 				basepath = "/";
+#ifdef BUILD_SMB2
 			}else if(Utility::startWith(path,"smb",false)){
 				smb2fs = new CSMB2FS(_path,"smb0","smb0:");
 				connected = smb2fs->RegisterFilesystem();
@@ -79,12 +90,15 @@
 				title = "SMB Browser " + thisurl.server;
 				remotefs = true;
 				
+#endif
+#ifdef BUILD_SSH
 			}else if(Utility::startWith(path,"sftp",false)){
 				sshfs = new CSSHFS(_path,"ssh0","ssh0:");
 				connected = sshfs->RegisterFilesystem();
 				basepath = "ssh0:/";
 				title = "SFTP Browser " + thisurl.server;
 				remotefs = true;
+#endif
 			}else if(Utility::startWith(path,"ftp",false)){
 				ftpfs = new CFTPFS(_path,"ftp0","ftp0:");
 				connected = ftpfs->RegisterFilesystem();
@@ -98,6 +112,7 @@
 				title = "HTTP Browser " + thisurl.server;
 				timelessFS = true;
 				remotefs = true;
+#ifdef BUILD_NFS
 			}else if(Utility::startWith(path,"nfs",false)){
 				title = "NFS Browser " + thisurl.server;
 				nfsfs = new CNFSFS(_path,"nfs0","nfs0:");
@@ -105,6 +120,7 @@
 				basepath = "nfs0:/";
 				currentpath = basepath;
 				remotefs = true;
+#endif
 			}
 		
 	}
@@ -121,15 +137,21 @@
 		if(myhttp!= nullptr){
 			delete myhttp;
 		}
+#ifdef BUILD_SSH
 		if(sshfs!= nullptr){
 			delete sshfs;
 		}
+#endif
+#ifdef BUILD_SMB2
 		if(smb2fs!= nullptr){
 			delete smb2fs;
 		}
+#endif
+#ifdef BUILD_NFS
 		if(nfsfs!= nullptr){
 			delete nfsfs;
 		}
+#endif
 		if(archfs!= nullptr){
 			delete archfs;
 		}
@@ -193,7 +215,7 @@
 		if(myhttp!= nullptr){
 			myhttp->DirList(path,extensions);
 		}
-		if(smb2fs!= nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs!=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+		if(hasRemoteNetFS() || archfs!=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 			currentpath = path;
 			currentlist.clear();
 			//struct dirent *ent;
@@ -385,7 +407,7 @@
 	}
 	
 	std::string CFileBrowser::backDir(){
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 			std::string oldpath = currentpath;
 			std::string relpath = currentpath.substr(currentpath.find_last_of("\\/")+1);
 			
@@ -413,7 +435,7 @@
 	
 	std::vector<FS::FileEntry> CFileBrowser::getCurrImageList(){
 		
-			if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+			if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 				return currentimagelist;
 			}
 			if(myhttp!= nullptr){
@@ -431,7 +453,7 @@
 	
 	std::vector<FS::FileEntry> CFileBrowser::getCurrList(){
 		
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr|| sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 			return currentlist;
 		}
 			if(myhttp!= nullptr){
@@ -449,7 +471,7 @@
 	
 	std::string CFileBrowser::getCurrentPath(){
 		
-			if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr || myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
+			if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr || myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
 				return currentpath;
 			}
 			
@@ -488,7 +510,7 @@
 	}
 	
 	std::string CFileBrowser::getBasePath(){
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!= nullptr || nfsfs!=nullptr || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr || myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 			return basepath;
 		}
 		if(myhttp!= nullptr){
@@ -569,7 +591,7 @@
 		if(myhttp!= nullptr){
 			myhttp->ResetDbStatus();
 		}
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr|| myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr|| myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
 			for(int i=0;i<currentlist.size();i++)
 			{		
 				currentlist[i].dbread = -1;
@@ -582,7 +604,7 @@
 		if(myhttp!= nullptr){
 			myhttp->SetFileDbStatus(idx,dbstatus);
 		}
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr|| myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr|| myusb!= nullptr|| ftpfs!= nullptr || m3u8fs != nullptr){
 			currentlist[idx].dbread = dbstatus;
 		}
 		
@@ -658,7 +680,7 @@
 				//myhttp->SetFileDbStatus(idx,dbstatus);
 		}
 			
-		if(basepath.find_first_of("/") == 0 || smb2fs!=nullptr || sshfs!=nullptr || nfsfs!=nullptr || archfs !=nullptr|| myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
+		if(basepath.find_first_of("/") == 0 || hasRemoteNetFS() || archfs !=nullptr|| myusb!= nullptr || ftpfs!= nullptr || m3u8fs != nullptr){
 				struct stat st = {0}; 
 				if (stat(filepath.c_str(), &st) == 0) {
 					if(LoadedFile!=nullptr){

@@ -113,14 +113,33 @@ public:
 	int getPDFCurrentPage();
 	
 protected:
+#ifdef BUILD_SSH
 	CSSHFS * sshfs = nullptr;
+#endif
+#ifdef BUILD_SMB2
 	CSMB2FS * smb2fs = nullptr;
+#endif
+#ifdef BUILD_NFS
 	CNFSFS * nfsfs = nullptr;
+#endif
 	CARCHFS * archfs = nullptr;
 	CFTPFS *ftpfs = nullptr;
 	CM3U8FS *m3u8fs = nullptr;
 	void *PDF = nullptr;
-	
+
+	bool hasRemoteNetFS() const {
+		return (false
+#ifdef BUILD_SMB2
+			|| smb2fs != nullptr
+#endif
+#ifdef BUILD_SSH
+			|| sshfs != nullptr
+#endif
+#ifdef BUILD_NFS
+			|| nfsfs != nullptr
+#endif
+		);
+	}
 
 private:
 	

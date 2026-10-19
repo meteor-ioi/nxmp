@@ -206,23 +206,35 @@ namespace Windows {
 			if (ImGui::Button("Test Connection", button_size))
 			{
 					if(Utility::startWith(newnetaddress,"smb",false)){
+#ifdef BUILD_SMB2
 						CSMB2FS *testcon = new CSMB2FS(newnetaddress,"smb0","smb0:");
 						urlcheck_isconnected = testcon->CheckConnection();
 						delete testcon;
+#else
+						urlcheck_isconnected = false;
+#endif
 						
 					}else if(Utility::startWith(newnetaddress,"sftp",false)){
+#ifdef BUILD_SSH
 						CSSHFS *testcon = new CSSHFS(newnetaddress,"ssh0","ssh0:");
 						urlcheck_isconnected = testcon->CheckConnection();
 						delete testcon;
+#else
+						urlcheck_isconnected = false;
+#endif
 						
 					}else if(Utility::startWith(newnetaddress,"ftp",false)){
 						CFTPFS *testcon = new CFTPFS(newnetaddress,"ftp0","ftp0:");
 						urlcheck_isconnected = testcon->CheckConnection();
 						delete testcon;		
 					}else if(Utility::startWith(newnetaddress,"nfs",false)){
+#ifdef BUILD_NFS
 						CNFSFS *testcon = new CNFSFS(newnetaddress,"nfs0","nfs0:");
 						urlcheck_isconnected = testcon->CheckConnection();
 						delete testcon;
+#else
+						urlcheck_isconnected = false;
+#endif
 					}else{
 						ImGui::Dummy(ImVec2(50.0f,50.0f));
 					}
