@@ -19,15 +19,21 @@ namespace Windows {
 	}
 
 	struct BrowserThumb {
-		Texture tex;
+		DkResHandle id = -1;
 		bool loaded = false;
 		bool custom = false;
 	};
 	static std::map<std::string, BrowserThumb> g_thumb_cache;
+	static std::vector<Texture> g_custom_textures;
 
-	static Texture GetEntryThumbnail(const FS::FileEntry& entry) {
+	static void ClearBrowserThumbCache() {
+		g_thumb_cache.clear();
+		g_custom_textures.clear();
+	}
+
+	static DkResHandle GetEntryThumbnail(const FS::FileEntry& entry) {
 		if (g_thumb_cache.find(entry.path) != g_thumb_cache.end()) {
-			return g_thumb_cache[entry.path].tex;
+			return g_thumb_cache[entry.path].id;
 		}
 
 		BrowserThumb bt;
@@ -47,15 +53,17 @@ namespace Windows {
 				FILE* f = fopen(c.c_str(), "rb");
 				if (f) {
 					fclose(f);
-					bt.tex = imgloader->OpenImageFile(c);
-					if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+					Texture t = imgloader->OpenImageFile(c);
+					if (t.id != (DkResHandle)-1 && t.id != 0) {
 						bt.custom = true;
+						bt.id = t.id;
+						g_custom_textures.push_back(std::move(t));
 						g_thumb_cache[entry.path] = bt;
-						return bt.tex;
+						return bt.id;
 					}
 				}
 			}
-			bt.tex = imgloader->icons.FolderTexture;
+			bt.id = imgloader->icons.FolderTexture.id;
 		} else {
 			std::string base_no_ext = entry.path;
 			size_t dot_pos = base_no_ext.find_last_of('.');
@@ -71,33 +79,37 @@ namespace Windows {
 				FILE* f = fopen(c.c_str(), "rb");
 				if (f) {
 					fclose(f);
-					bt.tex = imgloader->OpenImageFile(c);
-					if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+					Texture t = imgloader->OpenImageFile(c);
+					if (t.id != (DkResHandle)-1 && t.id != 0) {
 						bt.custom = true;
+						bt.id = t.id;
+						g_custom_textures.push_back(std::move(t));
 						g_thumb_cache[entry.path] = bt;
-						return bt.tex;
+						return bt.id;
 					}
 				}
 			}
 			if (entry.mediatype == FS::FileMediaType::Image) {
-				bt.tex = imgloader->OpenImageFile(entry.path);
-				if (bt.tex.id != (DkResHandle)-1 && bt.tex.id != 0) {
+				Texture t = imgloader->OpenImageFile(entry.path);
+				if (t.id != (DkResHandle)-1 && t.id != 0) {
 					bt.custom = true;
+					bt.id = t.id;
+					g_custom_textures.push_back(std::move(t));
 					g_thumb_cache[entry.path] = bt;
-					return bt.tex;
+					return bt.id;
 				}
-				bt.tex = imgloader->icons.ImageTexture;
+				bt.id = imgloader->icons.ImageTexture.id;
 			} else if (entry.mediatype == FS::FileMediaType::PDF) {
-				bt.tex = imgloader->icons.PDFTexture;
+				bt.id = imgloader->icons.PDFTexture.id;
 			} else if (entry.mediatype == FS::FileMediaType::Archive) {
-				bt.tex = imgloader->icons.ArchiveTexture;
+				bt.id = imgloader->icons.ArchiveTexture.id;
 			} else {
-				bt.tex = imgloader->icons.FileTexture;
+				bt.id = imgloader->icons.FileTexture.id;
 			}
 		}
 
 		g_thumb_cache[entry.path] = bt;
-		return bt.tex;
+		return bt.id;
 	}
 
 	static void HandleOpenEntry(const FS::FileEntry& curEntry, int n, bool& changefolder, bool& triggerselect) {
@@ -370,7 +382,8 @@ namespace Windows {
 						}
 					}
 					ImGui::EndTable();
-				} else {
+				}
+			} else {
 					// 缩略图海报墙网格视图 (Grid View)
 					float avail_w = ImGui::GetContentRegionAvail().x;
 					float spacing = 14.0f * multiplyRes;
@@ -421,11 +434,11 @@ namespace Windows {
 						}
 
 						// 3. 绘制缩略图
-						Texture thumb = GetEntryThumbnail(thislist[n]);
+						DkResHandle thumb_id = GetEntryThumbnail(thislist[n]);
 						ImVec2 img_p1 = ImVec2(p.x + 8.0f * multiplyRes, p.y + 8.0f * multiplyRes);
 						ImVec2 img_p2 = ImVec2(p.x + card_w - 8.0f * multiplyRes, p.y + 8.0f * multiplyRes + thumb_h);
 						draw_list->AddRectFilled(img_p1, img_p2, is_dark ? IM_COL32(20, 20, 24, 255) : IM_COL32(225, 227, 232, 255), 6.0f * multiplyRes);
-						draw_list->AddImage((void*)(intptr_t)thumb.id, img_p1, img_p2);
+						draw_list->AddImage((void*)(intptr_t)thumb_id, img_p1, img_p2);
 
 						// 4. 徽标 (目录/大小)
 						std::string tag_str = (thislist[n].type == FS::FileEntryType::Directory) ? "目录" : Utility::humanSize(thislist[n].size);
@@ -459,7 +472,7 @@ namespace Windows {
 				if(changefolder){
 					SetBrowserNav("");
 					changefolder = false;
-					g_thumb_cache.clear();
+					ClearBrowserThumbCache();
 				}
 				if(item.popupstate == POPUP_STATE_NONE){
 					ImGui::SetWindowFocus();
