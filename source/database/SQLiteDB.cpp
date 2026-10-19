@@ -1,7 +1,11 @@
 #include "SQLiteDB.h"
 
+extern sqlite3_vfs *sqlite3_HOSvfs(void);
 
 SQLiteDB::SQLiteDB(std::string _filename){
+	if (sqlite3_vfs_find("HOS_VFS") == nullptr) {
+		sqlite3_vfs_register(sqlite3_HOSvfs(), 1);
+	}
 	
 	NXLOG::DEBUGLOG("Opening DB\n");
 	fflush(stdout);

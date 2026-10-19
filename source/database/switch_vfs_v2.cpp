@@ -689,12 +689,12 @@ sqlite3_vfs *sqlite3_HOSvfs(void){
 
 
 
-int sqlite3_os_init(void) {
+__attribute__((weak)) int sqlite3_os_init(void) {
 	sqlite3_vfs_register(sqlite3_HOSvfs(), 1);
 	return 0;
 }
 
-int sqlite3_os_end(void) {
+__attribute__((weak)) int sqlite3_os_end(void) {
 	return 0;
 }
 
