@@ -24,7 +24,7 @@ jobs:
 
       - name: Install build tools
         run: |
-          apt-get update && apt-get install -y unzip wget p7zip-full git
+          apt-get update && apt-get install -y unzip wget p7zip-full git unar
 
       - name: Deploy Author's Precompiled NXMP Portlibs
         run: |
@@ -37,7 +37,11 @@ jobs:
           fi
           # Deploy additional precompiled libs (libbluray, libaacs, libuam)
           wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/portlibs-https.rar -O /tmp/portlibs-https.rar
-          7z x /tmp/portlibs-https.rar -o/opt/devkitpro/portlibs/ -y > /dev/null
+          unar -D -f /tmp/portlibs-https.rar -o /opt/devkitpro/portlibs/ || true
+          if [ -d /opt/devkitpro/portlibs/portlibs-https ]; then
+            cp -rf /opt/devkitpro/portlibs/portlibs-https/* /opt/devkitpro/portlibs/
+            rm -rf /opt/devkitpro/portlibs/portlibs-https
+          fi
           if [ -d /opt/devkitpro/portlibs/switch/switch ]; then
             cp -rf /opt/devkitpro/portlibs/switch/switch/* /opt/devkitpro/portlibs/switch/
             rm -rf /opt/devkitpro/portlibs/switch/switch
