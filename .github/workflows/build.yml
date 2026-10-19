@@ -35,17 +35,6 @@ jobs:
             cp -rf /opt/devkitpro/portlibs/switch/switch/* /opt/devkitpro/portlibs/switch/
             rm -rf /opt/devkitpro/portlibs/switch/switch
           fi
-          # Deploy additional precompiled libs (libbluray, libaacs, libuam)
-          wget -q https://github.com/proconsule/nxmp-portlibs/releases/download/v1.0.0/portlibs-https.rar -O /tmp/portlibs-https.rar
-          unar -D -f /tmp/portlibs-https.rar -o /opt/devkitpro/portlibs/ || true
-          if [ -d /opt/devkitpro/portlibs/portlibs-https ]; then
-            cp -rf /opt/devkitpro/portlibs/portlibs-https/* /opt/devkitpro/portlibs/
-            rm -rf /opt/devkitpro/portlibs/portlibs-https
-          fi
-          if [ -d /opt/devkitpro/portlibs/switch/switch ]; then
-            cp -rf /opt/devkitpro/portlibs/switch/switch/* /opt/devkitpro/portlibs/switch/
-            rm -rf /opt/devkitpro/portlibs/switch/switch
-          fi
           # Ensure freetype headers are accessible at both include/ and include/freetype2/
           if [ -d /opt/devkitpro/portlibs/switch/include/freetype2 ]; then
             cp -rn /opt/devkitpro/portlibs/switch/include/freetype2/* /opt/devkitpro/portlibs/switch/include/ || true
