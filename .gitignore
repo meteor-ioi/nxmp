@@ -4,4 +4,6 @@ nxmp/
 nxmp.*
 compile.bat
 dist/
+build_output/
+build_artifacts/
 .DS_Store
